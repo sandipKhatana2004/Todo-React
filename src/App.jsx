@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {v4 as uuidv4} from "uuid";
 
 function App() {
   const [newItem, setNewItem] = useState("");
@@ -6,11 +7,33 @@ function App() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    console.log(newItem);
+    if (newItem === "") return;
     setTodos((currentTodos) => {
-      return [...currentTodos, {title: newItem, completed: false}];
+      return [
+        ...currentTodos,
+        {id: uuidv4(), title: newItem, completed: false},
+      ];
+    });
+    setNewItem("");
+  }
+
+  function toggleTodo(id, completed) {
+    setTodos((currentTodos) => {
+      return currentTodos.map((todo) => {
+        if (todo.id === id) {
+          return {...todo, completed};
+        }
+        return todo;
+      });
     });
   }
+
+  function deleteTodo(id) {
+    setTodos((currentTodos) => {
+      return currentTodos.filter((todo) => todo.id !== id);
+    });
+  }
+
   return (
     <>
       <form onSubmit={handleSubmit} className="new-item-form">
@@ -25,14 +48,31 @@ function App() {
         </div>
         <button className="btn">Add</button>
       </form>
+      {todos.length === 0 ? (
+        <h1>No Todos</h1>
+      ) : (
+        <h1 className="header">Todo List</h1>
+      )}
       <ul>
-        {todos.length === 0 ? (
-          <h1>No Todos</h1>
-        ) : (
-          <h1 className="header">Todo List</h1>
-        )}
         {todos.map((todo) => {
-          return <li>{todo.title}</li>;
+          return (
+            <li key={todo.id}>
+              <label>
+                <input
+                  onChange={(e) => toggleTodo(todo.id, e.target.checked)}
+                  type="checkbox"
+                  checked={todo.checked}
+                />
+                {todo.title}
+              </label>
+              <button
+                className="btn btn-danger"
+                onClick={() => deleteTodo(todo.id)}
+              >
+                Delete
+              </button>
+            </li>
+          );
         })}
       </ul>
     </>
